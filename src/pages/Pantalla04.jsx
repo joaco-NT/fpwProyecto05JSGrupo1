@@ -144,7 +144,5 @@ const Pantalla04 = () => {
       </section>
 
     </main>
-  );
-};
 
 export default Pantalla04;

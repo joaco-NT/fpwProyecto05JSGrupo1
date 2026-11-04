@@ -233,4 +233,5 @@ const EstructuraJuegoTerminado = ({
   </>
 );
 
+
 export default Pantalla03;
