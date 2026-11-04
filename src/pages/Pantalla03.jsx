@@ -1,127 +1,69 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
 import Boton from "../components/Boton";
-
-import {
-  rondasJuego2,
-  calcularPuntajeYValidacion,
-} from "../services/calculoPantalla03";
-
+import { rondasJuego2, calcularPuntajeYValidacionJuego2 } from "../services/calculoPantalla03";
 import { guardarPuntajeJuego2 } from "../services/estadoJuego";
-
 import "../css/EstiloPantalla03.css";
 
 const Pantalla03 = () => {
   const navigate = useNavigate();
 
-  // ==========================================
-  // A. MEMORIA
-  // ==========================================
-
+  // --- A. Memoria ---
   const [indiceRonda, setIndiceRonda] = useState(0);
-
   const [puntaje, setPuntaje] = useState(0);
-
-  const [retroalimentacion, setRetroalimentacion] = useState({
-    mensaje: "",
-    claseCSS: "",
-  });
-
+  const [retroalimentacion, setRetroalimentacion] = useState({ mensaje: "", claseCSS: "" });
   const [juegoTerminado, setJuegoTerminado] = useState(false);
-
   const rondaActual = rondasJuego2[indiceRonda];
 
-  // ==========================================
-  // B. ACCIONES
-  // ==========================================
-
-  const manejarRespuesta = (opcionElegida) => {
-    // Evita que se pueda responder más de una vez
-    if (retroalimentacion.mensaje || juegoTerminado) {
-      return;
-    }
-
-    const resultado = calcularPuntajeYValidacion(
-      opcionElegida,
-      rondaActual.intruso,
-      puntaje
-    );
-
+  // --- B. Acciones ---
+  const manejarRespuesta = (opcionTexto) => {
+    const resultado = calcularPuntajeYValidacionJuego2(opcionTexto, rondaActual.correcta, puntaje);
+    
     setPuntaje(resultado.nuevoPuntaje);
-
-    setRetroalimentacion({
-      mensaje: resultado.mensaje,
-      claseCSS: resultado.claseCSS,
-    });
+    setRetroalimentacion({ mensaje: resultado.mensaje, claseCSS: resultado.claseCSS });
 
     setTimeout(() => {
-      setRetroalimentacion({
-        mensaje: "",
-        claseCSS: "",
-      });
-
+      setRetroalimentacion({ mensaje: "", claseCSS: "" });
+      
       if (indiceRonda + 1 < rondasJuego2.length) {
-        setIndiceRonda((prev) => prev + 1);
+        setIndiceRonda(indiceRonda + 1);
       } else {
         setJuegoTerminado(true);
-
-        guardarPuntajeJuego2(
-          Math.min(resultado.nuevoPuntaje, 50)
-        );
+        guardarPuntajeJuego2(Math.min(resultado.nuevoPuntaje, 50));
       }
-    }, 2500);
+    }, 3500);
   };
 
-  const manejarVerResumen = () => {
-    navigate("/resumen");
+  const manejarIrAResultados = () => {
+    navigate("/resultados");
   };
 
-  // ==========================================
-  // C. EFECTOS
-  // ==========================================
-
+  // --- C. Efectos ---
   useEffect(() => {
     document.body.classList.add("body-pantalla03");
-
-    return () => {
-      document.body.classList.remove("body-pantalla03");
-    };
+    return () => document.body.classList.remove("body-pantalla03");
   }, []);
 
-  // ==========================================
-  // D. MAPA DE ESTADOS
-  // ==========================================
-
+  // --- MAPA DE ESTADOS ---
   const estructurasPorEstado = {
     activo: (
-      <EstructuraJuegoActivo
-        rondaActual={rondaActual}
-        indiceRonda={indiceRonda}
-        puntaje={puntaje}
-        retroalimentacion={retroalimentacion}
-        manejarRespuesta={manejarRespuesta}
+      <EstructuraJuegoActivo 
+        rondaActual={rondaActual} 
+        retroalimentacion={retroalimentacion} 
+        manejarRespuesta={manejarRespuesta} 
       />
     ),
-
     terminado: (
-      <EstructuraJuegoTerminado
-        puntaje={puntaje}
-        alHacerClick={manejarVerResumen}
+      <EstructuraJuegoTerminado 
+        puntaje={puntaje} 
+        alHacerClick={manejarIrAResultados} 
       />
-    ),
+    )
   };
-
-  // ==========================================
-  // E. ESCENARIO
-  // ==========================================
 
   return (
     <main className="pantalla03">
-      {estructurasPorEstado[
-        juegoTerminado ? "terminado" : "activo"
-      ]}
+      {estructurasPorEstado[juegoTerminado ? "terminado" : "activo"]}
     </main>
   );
 };
@@ -130,69 +72,31 @@ const Pantalla03 = () => {
 // PIEZAS VISUALES AUXILIARES
 // ==========================================
 
-// ESTRUCTURA 1: Juego activo
-
-const EstructuraJuegoActivo = ({
-  rondaActual,
-  indiceRonda,
-  puntaje,
-  retroalimentacion,
-  manejarRespuesta,
-}) => (
+const EstructuraJuegoActivo = ({ rondaActual, retroalimentacion, manejarRespuesta }) => (
   <>
+    {/* Caja 1: Título */}
     <header className="pantalla03__caja-general">
-      <h1 className="pantalla03__titulo">
-        🐄 Juego 2: El Intruso de la Granja
-      </h1>
-
-      <p className="pantalla03__pregunta">
-        ¡Un animal que NO es de la granja se metió!
-      </p>
-
-      <p className="pantalla03__instruccion">
-        Encontrá al intruso y sacalo de la granja.
-      </p>
+      <h1 className="pantalla03__titulo">Juego 2: El Intruso de la Granja</h1>
     </header>
 
+    {/* Caja 2: Instrucción y 3 animales en fila */}
     <section className="pantalla03__caja-general">
-      <p className="pantalla03__progreso">
-        Ronda {indiceRonda + 1} de {rondasJuego2.length}
-      </p>
-
-      <p className="pantalla03__puntaje">
-        ⭐ Puntaje: {puntaje} / 50
-      </p>
-    </section>
-
-    <section className="pantalla03__caja-general">
-      <div className="pantalla03__grupo-animales">
-        {rondaActual.animales.map((animal) => (
-          <Boton
-            key={animal.nombre}
-            texto={
-              <>
-                <span className="pantalla03__emoji">
-                  {animal.emoji}
-                </span>
-
-                <span className="pantalla03__nombre-animal">
-                  {animal.nombre}
-                </span>
-              </>
-            }
-            disabled={Boolean(retroalimentacion.mensaje)}
-            alHacerClick={() =>
-              manejarRespuesta(animal.nombre)
-            }
-            claseCSS="pantalla03__boton-animal"
+      <p className="pantalla03__pregunta">¡Hay un intruso! Haz clic en el que NO es de la granja:</p>
+      
+      <div className="pantalla03__grupo-botones">
+        {rondaActual.opciones.map((opcionTexto, index) => (
+          <Boton 
+            key={index} 
+            texto={opcionTexto} 
+            disabled={Boolean(retroalimentacion.mensaje)} 
+            alHacerClick={() => manejarRespuesta(opcionTexto)} 
+            claseCSS="pantalla03__boton-opcion"
           />
         ))}
       </div>
 
       {retroalimentacion.mensaje && (
-        <p
-          className={`pantalla03__mensaje ${retroalimentacion.claseCSS}`}
-        >
+        <p className={`pantalla03__mensaje ${retroalimentacion.claseCSS}`}>
           {retroalimentacion.mensaje}
         </p>
       )}
@@ -200,38 +104,25 @@ const EstructuraJuegoActivo = ({
   </>
 );
 
-// ESTRUCTURA 2: Juego terminado
-
-const EstructuraJuegoTerminado = ({
-  puntaje,
-  alHacerClick,
-}) => (
+const EstructuraJuegoTerminado = ({ puntaje, alHacerClick }) => (
   <>
     <header className="pantalla03__caja-general">
-      <h1 className="pantalla03__titulo">
-        🎉 ¡Juego terminado!
-      </h1>
+      <h1 className="pantalla03__titulo">🎉 ¡Juego 2 terminado!</h1>
     </header>
 
     <section className="pantalla03__caja-general">
-      <p className="pantalla03__texto">
-        ¡Muy bien! Ayudaste a la granja.
-      </p>
-
-      <p className="pantalla03__puntaje-final">
-        Puntaje final: {puntaje} / 50
-      </p>
+      <p className="pantalla03__texto">Puntaje final: {puntaje} / 50</p>
     </section>
 
     <section className="pantalla03__caja-general">
-      <Boton
-        texto="Ver mis resultados 🏆"
-        alHacerClick={alHacerClick}
+      <p className="pantalla03__pregunta">¡Mirá tus resultados finales!</p>
+      <Boton 
+        texto="Ver Resultados 🏆" 
+        alHacerClick={alHacerClick} 
         claseCSS="pantalla03__boton-siguiente"
       />
     </section>
   </>
 );
-
 
 export default Pantalla03;
