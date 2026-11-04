@@ -20,7 +20,6 @@ const Pantalla01 = () => {
   };
 
   const manejarComenzar = () => {
-    // Procesamos la lógica a través del archivo de cálculos (Ciego al DOM)
     const resultado = validarNombreJugador(nombre);
 
     if (!resultado.valido) {
