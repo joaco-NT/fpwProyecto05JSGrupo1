@@ -59,7 +59,6 @@ Se utiliza para conservar el nombre del jugador y los puntajes obtenidos durante
 
 ### Archivos Modificados:
 - `src/services/estadoJuego.js`
-- `src/routes/Rutas.jsx`
 
 ### Archivos Eliminados:
 - N/A
